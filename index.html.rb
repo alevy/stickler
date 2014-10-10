@@ -1,3 +1,4 @@
+index = <<EOF
 <!DOCTYPE html>
 <html lang="en">
 
@@ -79,7 +80,7 @@ function base64EncArr (aBytes) {
 
   for (var nLen = aBytes.length, nUint24 = 0, nIdx = 0; nIdx < nLen; nIdx++) {
     nMod3 = nIdx % 3;
-    if (nIdx > 0 && (nIdx * 4 / 3) % 76 === 0) { sB64Enc += "\r\n"; }
+    if (nIdx > 0 && (nIdx * 4 / 3) % 76 === 0) { sB64Enc += "\\r\\n"; }
     nUint24 |= aBytes[nIdx] << (16 >>> nMod3 & 24);
     if (nMod3 === 2 || aBytes.length - nIdx === 1) {
       sB64Enc += String.fromCharCode(uint6ToB64(nUint24 >>> 18 & 63), uint6ToB64(nUint24 >>> 12 & 63), uint6ToB64(nUint24 >>> 6 & 63), uint6ToB64(nUint24 & 63));
@@ -181,7 +182,7 @@ function strToUTF8Arr (sDOMStr) {
 
 
       window.TPM = (function() {
-        var publicKeyStr = base64DecToArr("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwPwq5zHqCfZ1BED+Bg9kYeSXHILI87bUye4T751Wb0F6DGCcwwtAiY4hONRxS2PWxfV7/JGEcWSw+hjEFbzoRuhexIIqd1TgGVceuqQR2Ix/eGTVDugjtQabXMvDuMcRQ18qQ8Ti05ZtChibcG1qzl8LqKN65h+0spBVPjL7jc1ouTf3mzMuM7owjA+wpvRSZW2axzMqN8zkTBMzGfH2awWUnl1AflM7yl2OIYIAs3drQI/cF/AoNBnK316e5H23JHgV 2w9HGsdzWPG5c76HI4XstT+LD7NW/RPRiAS4ljM3Mw6inKSzwKgMGNPlZbAgnQ7Vdb+COeBO7jbVeO2fbwIDAQAB");
+        var publicKeyStr = base64DecToArr("<%= pubkey %>");
 
         var TPM = {}
         var publicKey;
@@ -260,7 +261,7 @@ function strToUTF8Arr (sDOMStr) {
       }());
 
       TPM.init(function() {
-        TPM.loadJS('base.js.sec');
+        TPM.loadJS('base.js');
       });
 
     </script>
@@ -268,3 +269,9 @@ function strToUTF8Arr (sDOMStr) {
   <body>
   </body>
 </html>
+EOF
+
+require 'erb'
+
+pubkey = File.read("keys/publickey.der").gsub(/[\r\n]/, "")
+ERB.new(index).run

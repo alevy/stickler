@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var crypto = require('crypto');
 
 process.argv.shift();
@@ -28,7 +29,8 @@ fs.readFile('keys/privkey.pem', function(err, privkey) {
           signature: sig,
           expiration: expiration
         };
-        fs.writeFile(outputDir + '/' + f, JSON.stringify(result), go);
+        fs.writeFile(path.join(outputDir, path.basename(f)),
+            JSON.stringify(result), go);
       });
     }
   }
