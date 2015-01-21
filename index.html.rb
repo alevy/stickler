@@ -40,13 +40,23 @@ index = <<EOF
           p.catch(errFunc);
         };
 
+        TPM.evalJSbase64 = function(success, data) {
+          TPM.evalJS(success, atob(data));
+        }
+        
         TPM.evalJS = function(success, data) { 
-            success ? eval(atob(data)) : alert("MITM!");
+            if(success) {
+              var s = document.createElement("script");
+              s.innerHTML = data;
+              window.document.body.appendChild(s);
+            } else {
+              alert("MITM!");
+            }
         };
 
         TPM.fetch = function(url, cb, err, verifyAs) {
           var req = new XMLHttpRequest();
-          cb = cb || TPM.evalJS;
+          cb = cb || TPM.evalJSbase64;
           req.onload = function() {
             var obj = JSON.parse(this.responseText);
             var payloadArr = TPM.base64toArray(obj.payload);

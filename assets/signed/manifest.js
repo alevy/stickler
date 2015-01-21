@@ -56,7 +56,7 @@ TPM.fetchLegacy = function(url, cb, err, hash) {
     var p = TPM.verifyHash(TPM.stringToArray(obj), hash, 
       function(verified) {
         if (verified) {
-          cb(true, obj.payload);
+          cb(true, obj);
         } else {
           cb(false, null);
         }
@@ -64,6 +64,19 @@ TPM.fetchLegacy = function(url, cb, err, hash) {
   };
   req.open('get', url);
   req.send();
+}
+
+TPM.fetchCSSLegacy = function(url, cb, err, hash) {
+  TPM.fetchLegacy(url, function(success, payload) {
+    if (success) {
+      var s = document.createElement("style");
+      s.innerHTML = payload;
+      window.document.head.appendChild(s);
+    } 
+
+    if (cb) 
+      cb(success, payload);
+  }, err, hash);
 }
 
 /******
@@ -99,8 +112,17 @@ TPM.loadManifest = function(manifest) {
 };
 
 (function() {
-  document.body.innerHTML = "Hello world!";
   var manifest = [
+    { 
+      'url': '/body.html', 
+      'type': 'js',   
+      'cb':
+        function(success, payload) { 
+            if (success) 
+              document.body.innerHTML += atob(payload);
+        }
+    },
+  /*
     { 
       'url': '/profile.jpg', 
       'type': 'jpg',   
@@ -109,7 +131,6 @@ TPM.loadManifest = function(manifest) {
             if (success) document.body.appendChild(img)
         }
     },
-  /*
     { 
       'url': '/bigphoto.jpg', 
       'type': 'jpg',   
@@ -145,17 +166,36 @@ TPM.loadManifest = function(manifest) {
               document.body.appendChild(img);
             }
         }
-    },*/
+    },
     { 
       'url': '/short.js', 
       'type': 'js',   
       'hash': 'DbP25fK6mMY1WIK1tBxJS9XT6cw/e3bBL6kx2ipsrBI=',
     },
+    */
     {
-      'url': 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js',
-      'type': 'js-foreign',
-      'hash': 'yO7sg/6L9lXu7aKRRm0mh3BDbd5OPkBBaoXQXTiT6JI=',
-    }
+      /* Bootstrap relies on jQuery, so load jQuery first. */
+      'url': '/jquery-2.1.3.min.js',
+      'type': 'js',
+      'hash': 'ivk71nXhz9nsyFDoYoGf2sbjrR9ddh+XDkCcfZxjvcM=', 
+      'cb': function(success, payload) {
+        TPM.evalJSbase64(success, payload);
+
+        /* Fetch Bootstrap CSS */
+        TPM.fetchCSSLegacy(
+          'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css', 
+          undefined, 
+          alert, 
+          '0xvvRQ7me2T5twv99B/k4AxlQ4cFzB+7SOpgJtOl1pc=');
+
+        /* Fetch Bootstrap JS */
+        TPM.fetchLegacy(
+          'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js',
+          undefined, 
+          alert, 
+          'yO7sg/6L9lXu7aKRRm0mh3BDbd5OPkBBaoXQXTiT6JI=');
+      }
+    },
   ];
   
   TPM.loadManifest(manifest);
