@@ -1,5 +1,6 @@
-ASSETS=$(wildcard assets/*)
-TARGETS=$(ASSETS:assets/%=site/%)
+ASSETS_HASHED=$(wildcard assets/hashed/*)
+ASSETS_SIGNED=$(wildcard assets/signed/*)
+TARGETS=$(ASSETS_SIGNED:assets/%=site/%) $(ASSETS_HASHED:assets/%=site/%)
 HTTP_SERVER=node_modules/http-server/bin/http-server
 
 all: assets site/index.html
@@ -9,8 +10,11 @@ site/index.html: index.html.rb keys/publickey.der
 
 assets: $(TARGETS)
 
-site/%: assets/% keys/publickey.der
-	node encoder.js site $<
+site/signed/%: assets/signed/% keys/publickey.der
+	node encoder.js sign site $<
+
+site/hashed/%: assets/hashed/% 
+	node encoder.js hash site $<
 
 keys/privkey.pem:
 	openssl genpkey -algorithm rsa -pkeyopt rsa_keygen_bits:2048 > keys/privkey.pem
