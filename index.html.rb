@@ -16,17 +16,22 @@ index = <<EOF
         var TPM = {}
         var publicKey;
 
-        /* From https://gist.github.com/borismus/1032746 */
-        var base64toArray = function(base64) {
-          var raw = window.atob(base64);
+        TPM.stringToArray = function(raw) {
           var rawLength = raw.length;
           var array = new Uint8Array(new ArrayBuffer(rawLength));
            
           for(var i = 0; i < rawLength; i++) {
             array[i] = raw.charCodeAt(i);
           }
+
           return array; 
-        }
+        };
+
+        /* From https://gist.github.com/borismus/1032746 */
+        TPM.base64toArray = function(base64) {
+          var raw = window.atob(base64);
+          return TPM.stringToArray(raw);
+        };
 
         TPM.verifySig = function(payloadArr, signatureArr, thenFunc, errFunc) {
           var p = window.crypto.subtle.verify(rsaAlgo, publicKey,
@@ -44,8 +49,8 @@ index = <<EOF
           cb = cb || TPM.evalJS;
           req.onload = function() {
             var obj = JSON.parse(this.responseText);
-            var payloadArr = base64toArray(obj.payload);
-            var signatureArr = base64toArray(obj.verif);
+            var payloadArr = TPM.base64toArray(obj.payload);
+            var signatureArr = TPM.base64toArray(obj.verif);
             var p = verifyAs(payloadArr, signatureArr, 
               function(verified) {
                 if (verified) {

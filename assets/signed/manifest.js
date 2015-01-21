@@ -48,6 +48,24 @@ TPM.fetchHash = function(url, cb, err, hash) {
   });
 };
 
+TPM.fetchLegacy = function(url, cb, err, hash) {
+  var req = new XMLHttpRequest();
+  cb = cb || TPM.evalJS;
+  req.onload = function() {
+    var obj = this.responseText;
+    var p = TPM.verifyHash(TPM.stringToArray(obj), hash, 
+      function(verified) {
+        if (verified) {
+          cb(true, obj.payload);
+        } else {
+          cb(false, null);
+        }
+      }, err);
+  };
+  req.open('get', url);
+  req.send();
+}
+
 /******
  * A manifest should be a list of objects of the form:
  *  {
@@ -67,6 +85,9 @@ TPM.loadManifest = function(manifest) {
       } else {
         TPM.fetchHash(row.url, row.cb, alert, row.hash)
       }
+    } else if (row.type == 'js-foreign') {
+      // JS served from offsite
+      TPM.fetchLegacy(row.url, row.cb, alert, row.hash)
     } else {
       if (doSig) {
         TPM.fetchSigImage(row.url, row.type, row.cb);
@@ -88,6 +109,7 @@ TPM.loadManifest = function(manifest) {
             if (success) document.body.appendChild(img)
         }
     },
+  /*
     { 
       'url': '/bigphoto.jpg', 
       'type': 'jpg',   
@@ -123,12 +145,17 @@ TPM.loadManifest = function(manifest) {
               document.body.appendChild(img);
             }
         }
-    },
+    },*/
     { 
       'url': '/short.js', 
       'type': 'js',   
       'hash': 'DbP25fK6mMY1WIK1tBxJS9XT6cw/e3bBL6kx2ipsrBI=',
     },
+    {
+      'url': 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js',
+      'type': 'js-foreign',
+      'hash': 'yO7sg/6L9lXu7aKRRm0mh3BDbd5OPkBBaoXQXTiT6JI=',
+    }
   ];
   
   TPM.loadManifest(manifest);
