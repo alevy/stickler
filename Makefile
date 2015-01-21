@@ -1,5 +1,6 @@
 ASSETS=$(wildcard assets/*)
 TARGETS=$(ASSETS:assets/%=site/%)
+HTTP_SERVER=node_modules/http-server/bin/http-server
 
 all: assets site/index.html
 
@@ -18,7 +19,7 @@ keys/publickey.der: keys/privkey.pem
 	openssl pkey -in keys/privkey.pem -pubout -outform der | base64 > keys/publickey.der
 
 run: assets site/index.html
-	http-server site/
+	 $(HTTP_SERVER) -c 1 site/
 
 clean_site:
 	rm -f site/*
