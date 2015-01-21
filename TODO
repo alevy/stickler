@@ -1,0 +1,7 @@
+[On Firefox]
+
+-- Use workers
+-- Use both signatures and hashes
+-- Make first-load thing as small as possible
+-- Use local storage for caching post-verification
+
