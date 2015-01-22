@@ -40,8 +40,8 @@ index = <<EOF
           p.catch(errFunc);
         };
 
-        TPM.evalJSbase64 = function(success, data) {
-          TPM.evalJS(success, atob(data));
+        TPM.evalJSArr = function(success, data) {
+          TPM.evalJS(success, String.fromCharCode.apply(null, data));
         }
         
         TPM.evalJS = function(success, data) { 
@@ -56,21 +56,23 @@ index = <<EOF
 
         TPM.fetch = function(url, cb, err, verifyAs) {
           var req = new XMLHttpRequest();
-          cb = cb || TPM.evalJSbase64;
+          cb = cb || TPM.evalJSArr;
           req.onload = function() {
-            var obj = JSON.parse(this.responseText);
-            var payloadArr = TPM.base64toArray(obj.payload);
-            var signatureArr = TPM.base64toArray(obj.verif);
-            var p = verifyAs(payloadArr, signatureArr, 
+            var arr = new Uint8Array(this.response);
+            var siglen = arr[0] + (arr[1] << 8);
+            var signature = arr.subarray(2, 2 + siglen);
+            var payload = arr.subarray(2 + siglen, arr.length);
+            var p = verifyAs(payload, signature,
               function(verified) {
                 if (verified) {
-                  cb(true, obj.payload);
+                  cb(true, payload);
                 } else {
                   cb(false, null);
                 }
               }, err);
           };
           req.open('get', url);
+          req.responseType = 'arraybuffer';
           req.send();
         }
 

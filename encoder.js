@@ -25,13 +25,13 @@ fs.readFile('keys/privkey.pem', function(err, privkey) {
   function sign(payload) {
     var sign = crypto.createSign("RSA-SHA256");
     sign.update(payload);
-    return sign.sign(privkey, 'base64');
+    return sign.sign(privkey);
   }
 
   function hash(payload) {
     var sha256 = crypto.createHash('sha256');
     sha256.update(payload);
-    return sha256.digest('base64');
+    return sha256.digest();
   }
 
   function go() {
@@ -47,13 +47,12 @@ fs.readFile('keys/privkey.pem', function(err, privkey) {
         // The expiration field is bogus unless signed... 
         // don't worry about it for now.
         // var expiration = Date.now() + 14 * 24 * 3600000;
-        var result = {
-          payload: new Buffer(payload).toString('base64'),
-          verif: verif,
-          // expiration: expiration
-        };
-        fs.writeFile(path.join(outputDir, path.basename(f)),
-            JSON.stringify(result), go);
+        var result = new Buffer(payload.length + verif.length + 2);
+        result[0] = verif.length & 0xff;
+        result[1] = verif.length >> 8;
+        verif.copy(result, 2);
+        payload.copy(result, verif.length + 2);
+        fs.writeFile(path.join(outputDir, path.basename(f)), result, go);
       });
     }
   }

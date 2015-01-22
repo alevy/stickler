@@ -32,13 +32,24 @@ TPM.fetchHashImage = function(url, fmt, cb, hash) {
   }, alert, hash);
 };
 
-TPM.verifyHash = function(payloadArr, verifArr, thenFunc, errFunc) {
+TPM.verifyHash = function(payloadArr, verif, thenFunc, errFunc) {
+  var verifArr = TPM.stringToArray(atob(verif));
   var hashAlgo = { name: "SHA-256" };
   var p = window.crypto.subtle.digest(hashAlgo, payloadArr);
   p.then(function(digest) {
-      var hashIs = arrayBufferToBase64(digest);
-      thenFunc(hashIs == verifArr);
-    });
+    var digest = new Uint8Array(digest);
+    if (digest.length != verifArr.length) {
+      thenFunc(false);
+    } else {
+      for (var i = 0; i < digest.length; i++) {
+        if (digest[i] != verifArr[i]) {
+          thenFunc(false);
+          return;
+        }
+      }
+      thenFunc(true);
+    }
+  });
   p.catch(errFunc);
 };
 
@@ -74,8 +85,9 @@ TPM.fetchCSSLegacy = function(url, cb, err, hash) {
       window.document.head.appendChild(s);
     } 
 
-    if (cb) 
+    if (cb) {
       cb(success, payload);
+    }
   }, err, hash);
 }
 
@@ -118,8 +130,10 @@ TPM.loadManifest = function(manifest) {
       'type': 'js',   
       'cb':
         function(success, payload) { 
-            if (success) 
-              document.body.innerHTML += atob(payload);
+            if (success) { 
+              document.body.innerHTML +=
+                String.fromCharCode.apply(null, payload);
+            }
         }
     },
   /*
@@ -179,12 +193,12 @@ TPM.loadManifest = function(manifest) {
       'type': 'js',
       'hash': 'ivk71nXhz9nsyFDoYoGf2sbjrR9ddh+XDkCcfZxjvcM=', 
       'cb': function(success, payload) {
-        TPM.evalJSbase64(success, payload);
+        TPM.evalJSArr(success, payload);
 
         /* Fetch Bootstrap CSS */
         TPM.fetchCSSLegacy(
           'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css', 
-          undefined, 
+          undefined,
           alert, 
           '0xvvRQ7me2T5twv99B/k4AxlQ4cFzB+7SOpgJtOl1pc=');
 
