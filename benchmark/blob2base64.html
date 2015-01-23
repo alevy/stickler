@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="benchmark.js"></script>
+  </head>
+  <body>
+    <script>
+
+      var fetchData = function(name, url, cb) {
+        var req = new XMLHttpRequest();
+        req.onload = function() {
+          cb({name: name, data: this.response});
+        }
+        req.open('get', url);
+        req.responseType = 'blob';
+        req.send();
+      }
+
+      var payloads = ['1kb.raw'];
+      for (var i = 100; i <= 5000; i = i + 100) {
+        payloads.push(i + 'kb.raw');
+      }
+
+      var foldPayloads = function(res, payloads, cb) {
+        var p = payloads.shift();
+        if (p) {
+          fetchData(p, p, function(d) {
+            res.push(d);
+            foldPayloads(res, payloads, cb);
+          });
+        } else {
+          cb(res);
+        }
+      }
+
+      /*fetchData('bigphoto.jpg', 'bigphoto.jpg', function(d) {
+        console.log(d);
+        var fr = new FileReader();
+        fr.readAsDataURL(d.data);
+        fr.onloadend = function() {
+          var img = document.createElement('img');
+          img.src = fr.result;
+          document.body.appendChild(img);
+        }
+      });*/
+
+      var testConvertBase64 = function(name, data) {
+        return new Benchmark(name, {
+          'defer': true,
+          'cycles': 1,
+          'fn': function(deferred) {
+            var fr = new FileReader();
+            fr.readAsDataURL(data);
+            fr.onloadend = function() {
+              deferred.resolve();
+            }
+          }
+        });
+      }
+
+      var testConvertArrayBuffer = function(name, data) {
+        return new Benchmark(name, {
+          'defer': true,
+          'cycles': 1,
+          'fn': function(deferred) {
+            var fr = new FileReader();
+            fr.readAsArrayBuffer(data);
+            fr.onloadend = function() {
+              deferred.resolve();
+            }
+          }
+        });
+      }
+
+
+      foldPayloads([], payloads, function(d) {
+        var suite = new Benchmark.Suite();
+        for (var i = 0; i < d.length; i++) {
+          suite.add(testConvertBase64('base64#' + d[i].name, d[i].data));
+          suite.add(testConvertArrayBuffer('arraybuf#' + d[i].name, d[i].data));
+        }
+        suite.on('cycle', function(event) {
+          var stats = event.target.stats;
+          console.log(stats.mean * 1000, stats.deviation * 1000, stats.sample.length);
+          var row = document.createElement("tr");
+          var name = document.createElement("td");
+          name.innerText = event.target.name;
+          var mean = document.createElement("td");
+          mean.innerText = stats.mean * 1000;
+          var stdev = document.createElement("td");
+          stdev.innerText = stats.deviation * 1000;
+          var samples = document.createElement("td");
+          samples.innerText =  stats.sample.length;
+          row.appendChild(name);
+          row.appendChild(mean);
+          row.appendChild(stdev);
+          row.appendChild(samples);
+          document.getElementById("results").appendChild(row);
+        })
+        .on('error', function(err) { console.error(err.target.error)})
+        .on('complete', function() {
+          console.log('Fastest is ' + this.filter('fastest').pluck('name'));
+        })
+        .run({ 'async': true });
+      });
+
+    </script>
+    <table id="results" style="width: 100%">
+      <tr>
+        <th>Name</th>
+        <th>Mean</th>
+        <th>Stdev</th>
+        <th>Samples</th>
+      </tr>
+    </table>
+  </body>
+</html>
