@@ -26,6 +26,9 @@ keys/publickey.der: keys/privkey.pem
 run: assets site/index.html
 	 $(HTTP_SERVER) -c 1 site/
 
+benchmark_server:
+	 $(HTTP_SERVER) -c 1 benchmark/
+
 clean_site:
 	rm -f site/*
 

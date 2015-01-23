@@ -11,7 +11,7 @@ index = <<EOF
       "use strict";
 
       window.TPM = (function() {
-        var publicKeyStr = Uint8Array(<%= Base64.decode64(pubkey).chars.map do |x| x.ord end %>);
+        var publicKeyStr = new Uint8Array(<%= Base64.decode64(pubkey).chars.map do |x| x.ord end %>);
 
         var TPM = {}
         var publicKey;
@@ -19,12 +19,12 @@ index = <<EOF
         TPM.stringToArray = function(raw) {
           var rawLength = raw.length;
           var array = new Uint8Array(new ArrayBuffer(rawLength));
-           
+
           for(var i = 0; i < rawLength; i++) {
             array[i] = raw.charCodeAt(i);
           }
 
-          return array; 
+          return array;
         };
 
         /* From https://gist.github.com/borismus/1032746 */
@@ -43,8 +43,8 @@ index = <<EOF
         TPM.evalJSArr = function(success, data) {
           TPM.evalJS(success, String.fromCharCode.apply(null, data));
         }
-        
-        TPM.evalJS = function(success, data) { 
+
+        TPM.evalJS = function(success, data) {
             if(success) {
               var s = document.createElement("script");
               s.innerHTML = data;
