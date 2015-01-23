@@ -110,7 +110,7 @@
       }
 
       var testSign = function(name, data) {
-        return new Benchmark(name, {
+        return new Benchmark("sign#" + name, {
           'defer': true,
           'cycles': 1,
           'fn': function(deferred) {
@@ -120,6 +120,23 @@
             var payload = arr.subarray(2 + siglen, arr.length);
             var p = window.crypto.subtle.verify(rsaAlgo, TPM.publicKey,
                         signature, payload);
+            p.then(function(verif) {
+              if (!verif) {
+                console.log('bad');
+              }
+              deferred.resolve()
+            });
+          }
+        });
+      }
+
+      var testHash = function(name, data) {
+        return new Benchmark("hash#" + name, {
+          'defer': true,
+          'cycles': 1,
+          'fn': function(deferred) {
+            var arr = new Uint8Array(data);
+            var p = window.crypto.subtle.digest({name: "SHA-256"}, arr);
             p.then(function() {
               deferred.resolve()
             });
@@ -127,12 +144,12 @@
         });
       }
 
-
       TPM.init(function() {
         foldPayloads([], payloads, function(d) {
           var suite = new Benchmark.Suite();
           for (var i = 0; i < d.length; i++) {
-            suite.add(testSign(d[i].name, d[i].data));
+            //suite.add(testSign(d[i].name, d[i].data));
+            suite.add(testHash(d[i].name, d[i].data));
           }
           suite.on('cycle', function(event) {
             window.ev = event;
