@@ -13,7 +13,7 @@ function arrayBufferToBase64( buffer ) {
 TPM.onImageLoaded = function(success, fmt, data, cb) {
   if (success) {
     var img = document.createElement("img");
-    img.src = "data:image/" + fmt + ";base64," + data;
+    img.src = "data:image/" + fmt + ";base64," + arrayBufferToBase64(data);
     cb(success, img);
   } else {
     document.body.innerHTML = '<h1>MITM!!!</h1>';
@@ -104,7 +104,7 @@ TPM.loadManifest = function(manifest) {
   for (var i=0; i<manifest.length; i++) {
     var row = manifest[i];
     var doSig = (row.hash == undefined);
-    if (row.type == 'js') {
+    if (row.type == 'js' || row.type == 'css') {
       if (doSig) {
         TPM.fetchSig(row.url, row.cb);
       } else {
@@ -136,15 +136,112 @@ TPM.loadManifest = function(manifest) {
             }
         }
     },
-  /*
     { 
-      'url': '/profile.jpg', 
-      'type': 'jpg',   
+      'url': '/style.css', 
+      'type': 'css',   
       'cb':
-        function(success, img) { 
-            if (success) document.body.appendChild(img)
+        function(success, payload) { 
+            if (success) { 
+              var s = document.createElement("style");
+              var data = String.fromCharCode.apply(null, payload)
+              s.innerHTML = data;
+              window.document.head.appendChild(s);
+            }
         }
     },
+    { 
+      'url': '/micro_ops_sign_hash.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("eval-figure").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-1.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-1").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-2.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-2").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-3.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-3").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-4.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-4").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-5.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-5").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/bootstrap-6.png',
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              document.getElementById("fig-bootstrap-6").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/chrome-logo.png', 
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              img.width = "128";
+              document.getElementById("chrome-logo").appendChild(img);
+            }
+        }
+    },
+    { 
+      'url': '/firefox-logo.png', 
+      'type': 'png',   
+      'cb':
+        function(success, img) { 
+            if (success) {
+              img.width = "128";
+              document.getElementById("firefox-logo").appendChild(img);
+            }
+        }
+    },
+    /*
     { 
       'url': '/bigphoto.jpg', 
       'type': 'jpg',   

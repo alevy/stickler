@@ -1,0 +1,23 @@
+
+.jumbotron {
+  margin-top: 6em !important;
+}
+
+#contact {
+  margin-top: 4em;
+  color: gray;
+  font-size: 70%;
+}
+
+.thumbnail img {
+  width: 100%;
+}
+
+.anchor{
+  display: block;
+  height: 24pt; /*same height as header*/
+  margin-top: -24pt; /*same height as header*/
+  visibility: hidden;
+}
+
+

@@ -43,6 +43,14 @@ fs.readFile('keys/privkey.pem', function(err, privkey) {
           return
         }
 
+        /*
+        var ext = path.extname(f);
+        // Guess if it's an image
+        if (ext == 'jpg' || ext == 'png' || ext == 'gif') {
+          payload = payload.toString('base64');
+        }
+        */
+
         var verif = signMode ? sign(payload) : hash(payload);
         // The expiration field is bogus unless signed... 
         // don't worry about it for now.
