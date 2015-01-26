@@ -219,6 +219,7 @@ TPM.loadManifest = function(manifest) {
             }
         }
     },
+/*
     { 
       'url': '/chrome-logo.png', 
       'type': 'png',   
@@ -241,7 +242,6 @@ TPM.loadManifest = function(manifest) {
             }
         }
     },
-    /*
     { 
       'url': '/bigphoto.jpg', 
       'type': 'jpg',   
